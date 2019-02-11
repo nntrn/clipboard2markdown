@@ -241,6 +241,39 @@ function cell (content, node) {
 
 var highlightRegEx = /highlight highlight-(\S+)/
 
+// get all class names
+function traverseClassElem(elem) {
+  var parentClass = [];
+  var counter = 0;
+
+  parentClass.push(elem.firstChild.className);
+
+  for (; elem && elem !== document; elem = elem.parentNode){
+    parentClass.push(elem.className);
+    counter++;
+
+    if(counter >2)
+      break;
+  }
+
+  var pc = parentClass.join(" ");
+  return pc.split(" ").filter(Boolean);
+}
+
+function getMarkupLanguage(arr){
+
+  var langclass = "";
+  arr.forEach(e=>{
+    if(e.match(/lan[a-z]*-/))
+      langclass = e.replace(/.*[a-z]*-/,"");
+    if(e.match(/source[a-z]*-/))
+      langclass = e.replace(/.*source-/,"");
+  })
+
+  return langclass;
+}
+
+
 module.exports = [
   {
     filter: 'br',
@@ -305,27 +338,14 @@ module.exports = [
     }
   },
 
-  // Fenced code blocks
-  {
-    filter: function (node) {
-      return node.nodeName === 'PRE' &&
-      node.firstChild &&
-      node.firstChild.nodeName === 'CODE'
-    },
-    replacement: function (content, node) {
-      return '\n\n```\n' + node.firstChild.textContent + '\n```\n\n'
-    }
-  },
-
   // Syntax-highlighted code blocks
+  /* for code blocks highlighted using prism */
   {
     filter: function (node) {
-      return node.nodeName === 'PRE' &&
-      node.parentNode.nodeName === 'DIV' &&
-      highlightRegEx.test(node.parentNode.className)
+      return node.nodeName === 'PRE'
     },
     replacement: function (content, node) {
-      var language = node.parentNode.className.match(highlightRegEx)[1]
+      var language = getMarkupLanguage(traverseClassElem(node));
       return '\n\n```' + language + '\n' + node.textContent + '\n```\n\n'
     }
   },
@@ -445,7 +465,7 @@ module.exports = [
       for (var i = 0; i < hLevel; i++) {
         hPrefix += '#'
       }
-      return '\n\n' + hPrefix + ' ' + content + '\n\n'
+      return '\n\n' + hPrefix + ' ' + content.replace(/\\\n/,'') + '\n\n'
     }
   },
 
@@ -489,6 +509,9 @@ module.exports = [
     },
     replacement: function (content, node) {
       var titlePart = node.title ? ' "' + node.title + '"' : ''
+
+      if(content.length )
+
       return '[' + content + '](' + node.getAttribute('href') + titlePart + ')'
     }
   },

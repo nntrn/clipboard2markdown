@@ -3,21 +3,21 @@
 
   // http://pandoc.org/README.html#pandocs-markdown
   var pandoc = [
-    {
-      filter: 'h1',
-      replacement: function (content, node) {
-        var underline = Array(content.length + 1).join('=');
-        return '\n\n' + content + '\n' + underline + '\n\n';
-      }
-    },
+    // {
+    //   filter: 'h1',
+    //   replacement: function (content, node) {
+    //     var underline = Array(content.length + 1).join('=');
+    //     return '\n\n' + content + '\n' + underline + '\n\n';
+    //   }
+    // },
 
-    {
-      filter: 'h2',
-      replacement: function (content, node) {
-        var underline = Array(content.length + 1).join('-');
-        return '\n\n' + content + '\n' + underline + '\n\n';
-      }
-    },
+    // {
+    //   filter: 'h2',
+    //   replacement: function (content, node) {
+    //     var underline = Array(content.length + 1).join('-');
+    //     return '\n\n' + content + '\n' + underline + '\n\n';
+    //   }
+    // },
 
     {
       filter: 'sup',
@@ -91,7 +91,7 @@
       filter: 'li',
       replacement: function (content, node) {
         content = content.replace(/^\s+/, '').replace(/\n/gm, '\n    ');
-        var prefix = '-   ';
+        var prefix = '*   ';
         var parent = node.parentNode;
 
         if (/ol/i.test(parent.nodeName)) {
@@ -109,6 +109,7 @@
 
   // http://pandoc.org/README.html#smart-punctuation
   var escape = function (str) {
+    //return(str);
     return str.replace(/[\u2018\u2019\u00b4]/g, "'")
               .replace(/[\u201c\u201d\u2033]/g, '"')
               .replace(/[\u2212\u2022\u00b7\u25aa]/g, '-')
@@ -159,11 +160,12 @@
     var pastebin = document.querySelector('#pastebin');
     var output = document.querySelector('#output');
     var wrapper = document.querySelector('#wrapper');
-
+    
     document.addEventListener('keydown', function (event) {
       if (event.ctrlKey || event.metaKey) {
         if (String.fromCharCode(event.which).toLowerCase() === 'v') {
           pastebin.innerHTML = '';
+         // htmlinput.innerHTML = '';  // for testing
           pastebin.focus();
           info.classList.add('hidden');
           wrapper.classList.add('hidden');
@@ -177,6 +179,7 @@
         var markdown = convert(html);
         // output.value = markdown;
         insert(output, markdown);
+
         wrapper.classList.remove('hidden');
         output.focus();
         output.select();
