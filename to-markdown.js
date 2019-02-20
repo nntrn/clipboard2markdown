@@ -24,8 +24,10 @@ var blocks = ['address', 'article', 'aside', 'audio', 'blockquote', 'body',
   'canvas', 'center', 'dd', 'dir', 'div', 'dl', 'dt', 'fieldset', 'figcaption',
   'figure', 'footer', 'form', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
   'header', 'hgroup', 'hr', 'html', 'isindex', 'li', 'main', 'menu', 'nav',
-  'noframes', 'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table',
-  'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul'
+  'noframes', 'noscript', 'ol', 'output', 'pre', 'section',
+	//'table','tbody', 'td', 'tfoot','th', 'thead',
+	'tr',
+	'ul'
 ]
 
 function isBlock (node) {
@@ -238,7 +240,14 @@ function cell (content, node) {
   if (index === 0) prefix = '| '
   return prefix + content + ' |'
 }
-
+// builds the table columns
+function columnBorder(int) {
+    var str = '|';
+    for (var i = 0; i < int; i++) {
+        str += '--|'
+    }
+    return str+'\n'
+}
 var highlightRegEx = /highlight highlight-(\S+)/
 
 // get all class names
@@ -296,47 +305,44 @@ module.exports = [
       return (node.checked ? '[x]' : '[ ]') + ' '
     }
   },
+	{
+	    filter: 'table',
+	    replacement: function(content) {
+	        return content
+	    }
+	},
 
-  {
-    filter: ['th', 'td'],
-    replacement: function (content, node) {
-      return cell(content, node)
+	{
+	    filter: 'tr',
+	    replacement: function(content, node) {
+				var border = '';
+				if(node.firstChild.nodeName=="TH")
+					border+= columnBorder(node.childNodes.length)
+				return '|'+content +'\n'+border
+	    }
+	},
+
+
+	{
+    filter: 'td',
+    replacement: function(content,node) {
+
+        return  node.textContent+"|"
     }
-  },
+	},
+	{
+    filter: 'th',
+    replacement: function(content, node) {
 
-  {
-    filter: 'tr',
-    replacement: function (content, node) {
-      var borderCells = ''
-      var alignMap = { left: ':--', right: '--:', center: ':-:' }
+        var colname = '';
+        for (var i = 0; i < node.childNodes.length; i++)
+					colname += node.textContent
 
-      if (node.parentNode.nodeName === 'THEAD') {
-        for (var i = 0; i < node.childNodes.length; i++) {
-          var align = node.childNodes[i].attributes.align
-          var border = '---'
-
-          if (align) border = alignMap[align.value] || border
-
-          borderCells += cell(border, node.childNodes[i])
-        }
-      }
-      return '\n' + content + (borderCells ? '\n' + borderCells : '')
+        return colname+"|";
     }
-  },
+},
 
-  {
-    filter: 'table',
-    replacement: function (content) {
-      return '\n\n' + content + '\n\n'
-    }
-  },
 
-  {
-    filter: ['thead', 'tbody', 'tfoot'],
-    replacement: function (content) {
-      return content
-    }
-  },
 
   // Syntax-highlighted code blocks
   /* for code blocks highlighted using prism */
